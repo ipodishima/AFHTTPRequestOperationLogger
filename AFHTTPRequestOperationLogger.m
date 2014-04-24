@@ -25,15 +25,15 @@
 
 #import <objc/runtime.h>
 
-#define XCODE_COLORS_ESCAPE @"\033["
+#define XCODE_COLORS_ESCAPE                        @"\033["
 
-#define XCODE_COLORS_RESET_FG  XCODE_COLORS_ESCAPE @"fg;" // Clear any foreground color
-#define XCODE_COLORS_RESET_BG  XCODE_COLORS_ESCAPE @"bg;" // Clear any background color
-#define XCODE_COLORS_RESET     XCODE_COLORS_ESCAPE @";"   // Clear any foreground or background color
+#define XCODE_COLORS_RESET_FG  XCODE_COLORS_ESCAPE @"fg;"  // Clear any foreground color
+#define XCODE_COLORS_RESET_BG  XCODE_COLORS_ESCAPE @"bg;"  // Clear any background color
+#define XCODE_COLORS_RESET     XCODE_COLORS_ESCAPE @";"    // Clear any foreground or background color
 
-#define AFLogBlue(frmt, ...) NSLog((XCODE_COLORS_ESCAPE @"fg110,132,181;" XCODE_COLORS_ESCAPE @"bg180,180,180;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
-#define AFLogRed(frmt, ...) NSLog((XCODE_COLORS_ESCAPE @"fg110,132,181;" XCODE_COLORS_ESCAPE @"bg180,180,180;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
-#define AFLogYellow(frmt, ...) NSLog((XCODE_COLORS_ESCAPE @"fg255,204,0;" XCODE_COLORS_ESCAPE @"bg180,180,180;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
+#define AFLogStart(frmt, ...)  NSLog((XCODE_COLORS_ESCAPE @"fg255,0,255;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
+#define AFLogError(frmt, ...)  NSLog((XCODE_COLORS_ESCAPE @"fg110,132,181;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
+#define AFLogEnd(frmt, ...)    NSLog((XCODE_COLORS_ESCAPE @"fg81,182,29;" frmt XCODE_COLORS_RESET), ##__VA_ARGS__)
 
 @implementation AFHTTPRequestOperationLogger
 
@@ -98,10 +98,10 @@ static void * AFHTTPRequestOperationStartDate = &AFHTTPRequestOperationStartDate
     
     switch (self.level) {
         case AFLoggerLevelDebug:
-            AFLogBlue(@"%@ '%@': %@ %@", [operation.request HTTPMethod], [[operation.request URL] absoluteString], [operation.request allHTTPHeaderFields], body);
+            AFLogStart(@"%@ '%@': %@ %@", [operation.request HTTPMethod], [[operation.request URL] absoluteString], [operation.request allHTTPHeaderFields], body);
             break;
         case AFLoggerLevelInfo:
-            AFLogYellow(@"%@ '%@'", [operation.request HTTPMethod], [[operation.request URL] absoluteString]);
+            AFLogStart(@"%@ '%@'", [operation.request HTTPMethod], [[operation.request URL] absoluteString]);
             break;
         default:
             break;
@@ -127,17 +127,17 @@ static void * AFHTTPRequestOperationStartDate = &AFHTTPRequestOperationStartDate
             case AFLoggerLevelInfo:
             case AFLoggerLevelWarn:
             case AFLoggerLevelError:
-                AFLogRed(@"[Error] %@ '%@' (%ld) [%.04f s]: %@", [operation.request HTTPMethod], [[operation.response URL] absoluteString], (long)[operation.response statusCode], elapsedTime, operation.error);
+                AFLogError(@"[Error] %@ '%@' (%ld) [%.04f s]: %@", [operation.request HTTPMethod], [[operation.response URL] absoluteString], (long)[operation.response statusCode], elapsedTime, operation.error);
             default:
                 break;
         }
     } else {
         switch (self.level) {
             case AFLoggerLevelDebug:
-                AFLogBlue(@"%ld '%@' [%.04f s]: %@ %@", (long)[operation.response statusCode], [[operation.response URL] absoluteString], elapsedTime, [operation.response allHeaderFields], operation.responseString);
+                AFLogEnd(@"%ld '%@' [%.04f s]: %@ %@", (long)[operation.response statusCode], [[operation.response URL] absoluteString], elapsedTime, [operation.response allHeaderFields], operation.responseString);
                 break;
             case AFLoggerLevelInfo:
-                AFLogYellow(@"%ld '%@' [%.04f s]", (long)[operation.response statusCode], [[operation.response URL] absoluteString], elapsedTime);
+                AFLogEnd(@"%ld '%@' [%.04f s]", (long)[operation.response statusCode], [[operation.response URL] absoluteString], elapsedTime);
                 break;
             default:
                 break;
